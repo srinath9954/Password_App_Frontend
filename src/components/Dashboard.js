@@ -39,7 +39,7 @@ const Dashboard = () => {
         const userId = auth.currentUser.uid;
         setLoading(true); // Set loading to true before fetching
         try {
-          const response = await axios.get(`http://localhost:5000/get_passwords/${userId}`);
+          const response = await axios.get(`https://password-app-backend.onrender.com/get_passwords/${userId}`);
           setPasswords(response.data);
         } catch (error) {
           console.error('Error fetching passwords:', error);
@@ -85,17 +85,17 @@ const Dashboard = () => {
     if (auth.currentUser) {
       const userId = auth.currentUser.uid;
       try {
-        await axios.post('http://localhost:5000/add_password', { website, username, password, user_id: userId });
+        await axios.post('https://password-app-backend.onrender.com/add_password', { website, username, password, user_id: userId });
         setWebsite('');
         setUsername('');
         setPassword('');
-        setLoading(true); // Set loading to true before fetching updated passwords
-        const response = await axios.get(`http://localhost:5000/get_passwords/${userId}`);
+        setLoading(true);
+        const response = await axios.get(`https://password-app-backend.onrender.com/get_passwords/${userId}`);
         setPasswords(response.data);
       } catch (error) {
         console.error('Error adding password:', error);
       } finally {
-        setLoading(false); // Set loading to false after fetching or error
+        setLoading(false);
       }
     }
   };
@@ -103,17 +103,17 @@ const Dashboard = () => {
   const handleDeletePassword = async (id) => {
     if (auth.currentUser) {
       try {
-        await axios.delete('http://localhost:5000/delete_password', {
+        await axios.delete('https://password-app-backend.onrender.com/delete_password', {
           data: { id }
         });
-        setLoading(true); // Set loading to true before fetching updated passwords
+        setLoading(true);
         const userId = auth.currentUser.uid;
-        const response = await axios.get(`http://localhost:5000/get_passwords/${userId}`);
+        const response = await axios.get(`https://password-app-backend.onrender.com/get_passwords/${userId}`);
         setPasswords(response.data);
       } catch (error) {
         console.error('Error deleting password:', error);
       } finally {
-        setLoading(false); // Set loading to false after fetching or error
+        setLoading(false);
       }
     }
   };
@@ -194,7 +194,7 @@ const Dashboard = () => {
         </PaperStyled>
         <Box mt={4}>
           <Typography variant="h6">Saved Passwords</Typography>
-          {loading ? ( // Show loading spinner while loading
+          {loading ? (
             <CircularProgress />
           ) : (
             passwords.map((pwd) => (
