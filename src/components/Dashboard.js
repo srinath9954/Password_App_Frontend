@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Button, TextField, Container, Typography, Box, IconButton, Grid, Paper } from '@mui/material';
+import { Button, TextField, Container, Typography, Box, IconButton, Grid, Paper, CircularProgress } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { auth } from '../firebase';
@@ -31,16 +31,20 @@ const Dashboard = () => {
   const [passwords, setPasswords] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
   const [timeoutId, setTimeoutId] = useState(null);
+  const [loading, setLoading] = useState(true); // Add loading state
 
   useEffect(() => {
     const fetchPasswords = async () => {
       if (auth.currentUser) {
         const userId = auth.currentUser.uid;
+        setLoading(true); // Set loading to true before fetching
         try {
-          const response = await axios.get(`https://password-app-backend.onrender.com/get_passwords/${userId}`);
+          const response = await axios.get(`http://localhost:5000/get_passwords/${userId}`);
           setPasswords(response.data);
         } catch (error) {
           console.error('Error fetching passwords:', error);
+        } finally {
+          setLoading(false); // Set loading to false after fetching or error
         }
       }
     };
@@ -81,14 +85,17 @@ const Dashboard = () => {
     if (auth.currentUser) {
       const userId = auth.currentUser.uid;
       try {
-        await axios.post('https://password-app-backend.onrender.com/add_password', { website, username, password, user_id: userId });
+        await axios.post('http://localhost:5000/add_password', { website, username, password, user_id: userId });
         setWebsite('');
         setUsername('');
         setPassword('');
-        const response = await axios.get(`https://password-app-backend.onrender.com/get_passwords/${userId}`);
+        setLoading(true); // Set loading to true before fetching updated passwords
+        const response = await axios.get(`http://localhost:5000/get_passwords/${userId}`);
         setPasswords(response.data);
       } catch (error) {
         console.error('Error adding password:', error);
+      } finally {
+        setLoading(false); // Set loading to false after fetching or error
       }
     }
   };
@@ -96,14 +103,17 @@ const Dashboard = () => {
   const handleDeletePassword = async (id) => {
     if (auth.currentUser) {
       try {
-        await axios.delete('https://password-app-backend.onrender.com/delete_password', {
+        await axios.delete('http://localhost:5000/delete_password', {
           data: { id }
         });
+        setLoading(true); // Set loading to true before fetching updated passwords
         const userId = auth.currentUser.uid;
-        const response = await axios.get(`https://password-app-backend.onrender.com/get_passwords/${userId}`);
+        const response = await axios.get(`http://localhost:5000/get_passwords/${userId}`);
         setPasswords(response.data);
       } catch (error) {
         console.error('Error deleting password:', error);
+      } finally {
+        setLoading(false); // Set loading to false after fetching or error
       }
     }
   };
@@ -184,43 +194,47 @@ const Dashboard = () => {
         </PaperStyled>
         <Box mt={4}>
           <Typography variant="h6">Saved Passwords</Typography>
-          {passwords.map((pwd) => (
-            <PaperStyled key={pwd._id}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={4}>
-                  <Typography variant="body1">Website: {pwd.website}</Typography>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <Typography variant="body1">Username: {pwd.username}</Typography>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <Typography variant="body1">
-                    Password:
-                    <PasswordText>
-                      {showPassword ? pwd.password : '•••••••••••'}
-                    </PasswordText>
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={handleTogglePasswordVisibility}
-                      edge="end"
-                      sx={{ ml: 1 }}
+          {loading ? ( // Show loading spinner while loading
+            <CircularProgress />
+          ) : (
+            passwords.map((pwd) => (
+              <PaperStyled key={pwd._id}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={4}>
+                    <Typography variant="body1">Website: {pwd.website}</Typography>
+                  </Grid>
+                  <Grid item xs={12} md={4}>
+                    <Typography variant="body1">Username: {pwd.username}</Typography>
+                  </Grid>
+                  <Grid item xs={12} md={4}>
+                    <Typography variant="body1">
+                      Password:
+                      <PasswordText>
+                        {showPassword ? pwd.password : '•••••••••••'}
+                      </PasswordText>
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={handleTogglePasswordVisibility}
+                        edge="end"
+                        sx={{ ml: 1 }}
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={() => handleDeletePassword(pwd._id)}
                     >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </Typography>
+                      Delete
+                    </Button>
+                  </Grid>
                 </Grid>
-                <Grid item xs={12}>
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    onClick={() => handleDeletePassword(pwd._id)}
-                  >
-                    Delete
-                  </Button>
-                </Grid>
-              </Grid>
-            </PaperStyled>
-          ))}
+              </PaperStyled>
+            ))
+          )}
         </Box>
       </Box>
     </ContainerStyled>
