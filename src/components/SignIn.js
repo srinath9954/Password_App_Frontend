@@ -18,6 +18,7 @@ const SignIn = () => {
       }
     } catch (error) {
       console.error("Error signing in:", error.message);
+      alert("Invalid email/password");
     }
   };
 
@@ -26,6 +27,7 @@ const SignIn = () => {
       await signInWithPopup(auth, provider);
     } catch (error) {
       console.error("Error signing in with Google:", error.message);
+      alert("Login failed");
     }
   };
 
