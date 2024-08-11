@@ -29,22 +29,22 @@ const Dashboard = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [passwords, setPasswords] = useState([]);
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswords, setShowPasswords] = useState({});
   const [timeoutId, setTimeoutId] = useState(null);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPasswords = async () => {
       if (auth.currentUser) {
         const userId = auth.currentUser.uid;
-        setLoading(true); // Set loading to true before fetching
+        setLoading(true);
         try {
           const response = await axios.get(`https://password-app-backend.onrender.com/get_passwords/${userId}`);
           setPasswords(response.data);
         } catch (error) {
           console.error('Error fetching passwords:', error);
         } finally {
-          setLoading(false); // Set loading to false after fetching or error
+          setLoading(false);
         }
       }
     };
@@ -118,8 +118,11 @@ const Dashboard = () => {
     }
   };
 
-  const handleTogglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
+  const handleTogglePasswordVisibility = (id) => {
+    setShowPasswords((prevShowPasswords) => ({
+      ...prevShowPasswords,
+      [id]: !prevShowPasswords[id],
+    }));
   };
 
   const handleSignOut = async () => {
@@ -166,7 +169,7 @@ const Dashboard = () => {
             <Grid item xs={12}>
               <TextField
                 label="Password"
-                type={showPassword ? 'text' : 'password'}
+                type={password ? 'text' : 'password'}
                 variant="outlined"
                 margin="normal"
                 fullWidth
@@ -176,10 +179,10 @@ const Dashboard = () => {
                   endAdornment: (
                     <IconButton
                       aria-label="toggle password visibility"
-                      onClick={handleTogglePasswordVisibility}
+                      onClick={() => setShowPasswords((prev) => !prev)}
                       edge="end"
                     >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                      {showPasswords ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   ),
                 }}
@@ -194,7 +197,7 @@ const Dashboard = () => {
         </PaperStyled>
         <Box mt={4}>
           <Typography variant="h6">Saved Passwords</Typography>
-          {loading ? (
+          {loading ? ( // Show loading spinner while loading
             <CircularProgress />
           ) : (
             passwords.map((pwd) => (
@@ -210,15 +213,15 @@ const Dashboard = () => {
                     <Typography variant="body1">
                       Password:
                       <PasswordText>
-                        {showPassword ? pwd.password : '•••••••••••'}
+                        {showPasswords[pwd._id] ? pwd.password : '•••••••••••'}
                       </PasswordText>
                       <IconButton
                         aria-label="toggle password visibility"
-                        onClick={handleTogglePasswordVisibility}
+                        onClick={() => handleTogglePasswordVisibility(pwd._id)}
                         edge="end"
                         sx={{ ml: 1 }}
                       >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                        {showPasswords[pwd._id] ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
                     </Typography>
                   </Grid>
