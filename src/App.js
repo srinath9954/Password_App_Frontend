@@ -38,7 +38,7 @@ function App() {
 
   return (
     <Router>
-      <NavBar />
+      <NavBar deferredPrompt={deferredPrompt} handleInstallClick={handleInstallClick}/>
       <Routes>
         <Route path="/SignIn" element={user ? <Navigate to="/dashboard" /> : <SignIn />} />
         <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/SignIn" />} />
