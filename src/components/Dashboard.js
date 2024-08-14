@@ -148,7 +148,7 @@ const Dashboard = () => {
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
               <TextField
-                label="Website"
+                label="Website/ App name"
                 variant="outlined"
                 margin="normal"
                 fullWidth
